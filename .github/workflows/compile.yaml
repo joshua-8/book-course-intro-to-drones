@@ -1,0 +1,41 @@
+name: compile
+on:
+  push:
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the
+      # added or changed files to the repository. https://github.com/marketplace/actions/git-auto-commit
+      contents: write
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      - name: Docker Setup QEMU
+        uses: docker/setup-qemu-action@v2.1.0
+      - 
+        name: Setup Python
+        uses: actions/setup-python@v4.5.0
+        with: 
+          python-version: '3.11'
+      -
+        name: setup shell
+        run: |
+          cd $GITHUB_WORKSPACE
+          sudo adduser `whoami` docker
+          pip3 install --no-cache-dir --user -U duckietown-shell
+      -
+        name: checkout
+        uses: actions/checkout@v3
+      - name: compile
+        run: |
+          cd $GITHUB_WORKSPACE
+          dts --set-version daffy
+          dts docs build --pdf
+      - name: debug
+        run: tree /tmp
+      - name: push
+        uses: stefanzweifel/git-auto-commit-action@v4
+        
